@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - chore/minecraft-26.3
   pull_request:
   workflow_dispatch:
 
@@ -13,30 +14,54 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: legacy-paper-1.21.8
+            paper-api-version: 1.21.8-R0.1-SNAPSHOT
+          - name: paper-26.3
+            paper-api-version: 26.3.build.157-beta
 
+    name: Build (${{ matrix.name }})
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
 
-      - name: Set up Gradle
+      - name: Set up Gradle 9.6.1
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.14.3'
+          gradle-version: '9.6.1'
 
       - name: Build and test
-        run: gradle --no-daemon clean build
+        run: gradle --no-daemon clean build -PpaperApiVersion="${{ matrix.paper-api-version }}"
+
+      - name: Verify Java 21 plugin bytecode
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          classes = list(Path("build/classes/java/main").rglob("*.class"))
+          if not classes:
+              raise SystemExit("no main class files found")
+          majors = {struct.unpack(">H", p.read_bytes()[6:8])[0] for p in classes}
+          print(f"main class count={len(classes)} major versions={sorted(majors)}")
+          if majors != {65}:
+              raise SystemExit(f"expected Java 21 major 65, got {sorted(majors)}")
+          PY
 
       - name: Upload plugin artifact
         uses: actions/upload-artifact@v4
         with:
-          name: YsmModelEngineMolang
+          name: YsmModelEngineMolang-${{ matrix.name }}
           path: build/libs/YsmModelEngineMolang-*.jar
           if-no-files-found: error
           retention-days: 14
