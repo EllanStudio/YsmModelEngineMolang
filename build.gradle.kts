@@ -12,7 +12,7 @@ java {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.3.build.157-beta")
     compileOnly("com.ticxo.modelengine:ModelEngine:R4.1.0") {
         isTransitive = false
     }
@@ -25,11 +25,11 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    testRuntimeOnly("io.papermc.paper:paper-api:26.3.build.157-beta")
     testRuntimeOnly("com.ticxo.modelengine:ModelEngine:R4.1.0") {
         isTransitive = false
     }
-    testCompileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    testCompileOnly("io.papermc.paper:paper-api:26.3.build.157-beta")
     testCompileOnly("com.ticxo.modelengine:ModelEngine:R4.1.0") {
         isTransitive = false
     }
